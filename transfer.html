@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Details and Money Transfer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #F0F0F0;
+        }
+        .customer-details {
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            padding: 20px;
+            width: 80%;
+            background-color: #FFF;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .transfer-form {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Customer Details</h1>
+    <div class="customer-details">
+        <table>
+            <thead>
+                <tr>
+                    <th>Customer ID</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Address</th>
+                    <th>Balance</th>
+                </tr>
+            </thead>
+            <tbody id="customerTable">
+                <!-- Customer data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="transfer-form">
+        <h2>Money Transfer</h2>
+        <form id="transaction-form">
+            <label for="from-account">Select Your ID:</label>
+            <select id="from-account" name="fromAccount" >
+                <!-- Sender's account numbers will be populated by JavaScript -->
+            </select>
+
+            <label for="to-account">Select Receiver's ID:</label>
+            <select id="to-account" name="toAccount"  required>
+                <!-- Recipient's account numbers will be populated by JavaScript -->
+            </select>
+
+            <label for="amount">Amount to Send:</label>
+            <input type="number" id="amount" name="amount" required>
+
+            <button type="button" id="transaction-button">Submit</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Fetch customer data and populate the table
+            fetch('/customers')
+                .then(response => response.json())
+                .then(data => {
+                    const customerTable = document.getElementById('customerTable');
+                    data.forEach(customer => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${customer.customer_id}</td>
+                            <td>${customer.first_name}</td>
+                            <td>${customer.last_name}</td>
+                            <td>${customer.email}</td>
+                            <td>${customer.address}</td>
+                            <td>${customer.balance}</td>
+                        `;
+                        customerTable.appendChild(row);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching customer data:', error);
+                });
+
+            // Fetch customer account data and populate the dropdowns
+           // Fetch customer account data and populate the dropdowns
+fetch('/customerAccountData')
+    .then(response => response.json())
+    .then(customerIds => {
+        const fromAccountSelect = document.getElementById('from-account');
+        const toAccountSelect = document.getElementById('to-account');
+
+        customerIds.forEach(customerId => {
+            const option = document.createElement('option');
+            option.value = customerId;
+            option.textContent = customerId;
+            fromAccountSelect.appendChild(option.cloneNode(true));
+            toAccountSelect.appendChild(option);
+        });
+    })
+    .catch(error => {
+        console.error('Error fetching customer account data:', error);
+    });
+
+            // Handle the transaction form submission
+const transactionForm = document.getElementById('transaction-form');
+transactionForm.addEventListener('submit', async event => {
+    event.preventDefault();
+
+    const fromAccountSelect = document.getElementById('from-account');
+    const toAccountSelect = document.getElementById('to-account');
+    const amount = document.getElementById('amount').value;
+
+    const fromAccount = fromAccountSelect.value;
+    const toAccount = toAccountSelect.value;
+
+    // Send the transaction data to the server for processing
+    // You can add your AJAX or fetch request here to send data to the server
+    fetch('/transferMoney', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            fromAccount: fromAccount,
+            toAccount: toAccount,
+            amount: amount
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Handle the response from the server, e.g., show a success message
+        console.log(data.message); // You can replace this with your logic
+    })
+    .catch(error => {
+        console.error('Error performing the money transfer:', error);
+    });
+
+    // Clear selected options after submission
+    fromAccountSelect.selectedIndex = 0;
+    toAccountSelect.selectedIndex = 0;
+});
+
+        });
+    </script>
+</body>
+</html>
